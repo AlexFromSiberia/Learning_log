@@ -1,0 +1,30 @@
+version: '3.8'
+
+volumes:
+    pgdata:
+        driver: local
+services:
+    nginx:
+        restart: always
+        image: nginx:latest
+        expose:
+          - 8080
+        ports:
+          - "3008:8080"
+        volumes:
+            - ./learning_log/static:/srv/www/learning_log/static
+            - ./learning_log/media:/srv/www/learning_log/media
+            - ./learning_log/logs:/srv/www/learning_log/logs
+            - ./docker/nginx:/etc/nginx/conf.d
+        depends_on:
+            - python
+    python:
+        restart: always
+        build:
+            context: .
+            dockerfile: docker/python/Dockerfile
+        volumes:
+            - ./learning_log:/srv/www/learning_log
+
+        command: "gunicorn -c gunicorn.py learning_log.wsgi"
+
